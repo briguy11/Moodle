@@ -75,6 +75,9 @@ check_fileServerType_param $fileServerType
   if [ "$webServerType" = "apache" ]; then
     # install apache pacakges
     sudo apt-get -y install apache2 libapache2-mod-php
+
+    # install shibboleth packages
+    sudo apt-get -y install libapache2-mod-shib2
   else
     # for nginx-only option
     sudo apt-get -y install php-fpm
