@@ -106,7 +106,7 @@
             "type": "string"
         },
         "siteURL": {
-            "defaultValue": "www.example.org",
+            "defaultValue": "moodledevcloud.admin.uillinois.edu",
             "metadata": {
                 "description": "URL for Moodle site"
             },
