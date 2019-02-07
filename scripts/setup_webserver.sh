@@ -78,6 +78,8 @@ check_fileServerType_param $fileServerType
 
     # install shibboleth packages
     sudo apt-get -y install libapache2-mod-shib2
+    sudo a2enmod shib2
+
   else
     # for nginx-only option
     sudo apt-get -y install php-fpm
@@ -306,9 +308,275 @@ EOF
     sed -i "s/Listen 80/Listen 81/" /etc/apache2/ports.conf
     a2enmod rewrite && a2enmod remoteip && a2enmod headers
 
+    # setup shib config
+    sudo mv /etc/shibboleth/shibboleth2.xml /etc/shibboleth/shibboleth2.xml.orig
+   
+    cat <<EOF >> /etc/shibboleth2.xml
+<SPConfig xmlns="urn:mace:shibboleth:2.0:native:sp:config"
+    xmlns:conf="urn:mace:shibboleth:2.0:native:sp:config"
+    xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+    xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+    xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+    clockSkew="180">
+	<!--
+	     Put your SP's unique entity ID in the below entityID attribute
+	     Optional: set attributes you want assigned to remote_user,
+	     space-separated, in REMOTE_USER. The first attribute in
+	     your list that is sent by the IDP will be used.
+	 -->
+	<ApplicationDefaults entityID="https://${siteFQDN}/shibboleth"
+	                     REMOTE_USER="uin eppn persistent-id targeted-id">
+		<!--
+		     Lifetime is the max length of a session in seconds.
+		     Timeout is the inactivity time-out in seconds.
+		-->
+		<Sessions lifetime="28800" timeout="3600" relayState="ss:mem"
+			  checkAddress="false" handlerSSL="true" cookieProps="https">
+			    <SSO entityID=""
+			         discoveryProtocol="SAMLDS" discoveryURL="https://discovery.illinois.edu/discovery/DS">
+			         SAML2 SAML1
+			    </SSO>
+			<Logout>SAML2 Local</Logout>
+			<Handler type="MetadataGenerator" Location="/Metadata" signing="false"/>
+			<Handler type="Status" Location="/Status" acl="127.0.0.1 ::1"/>
+			<Handler type="Session" Location="/Session" showAttributeValues="false"/>
+			<Handler type="DiscoveryFeed" Location="/DiscoFeed"/>
+		</Sessions>
+		<!--
+		     Set the email address that's displayed in error
+		     templates. Also set the help URL.
+		-->
+		<Errors supportContact="servicedeskaits@uillinois.edu"
+			helpLocation="/about.html"
+			styleSheet="/shibboleth-sp/main.css"/>
+		<!-- Configuration to consume I-Trust metadata. -->
+		<MetadataProvider type="XML" uri="https://discovery.itrust.illinois.edu/itrust-metadata/itrust-metadata.xml"
+			    backingFilePath="itrust-metadata.xml" reloadInterval="7200">
+		    <MetadataFilter type="RequireValidUntil" maxValidityInterval="2419200"/>
+		    <MetadataFilter type="Signature" certificate="itrust.pem"/>
+		    <!-- Limit users to those from Urbana's IDP -->
+		    <MetadataFilter type="Whitelist">
+			<Include>urn:mace:incommon:uiuc.edu</Include>
+			<Include>https://shibboleth.uic.edu/shibboleth</Include>
+			<Include>https://uisshibb1.uis.edu/idp/shibboleth</Include>
+		    </MetadataFilter>
+		</MetadataProvider>
+		<AttributeExtractor type="XML" validate="true" reloadChanges="false"
+			path="attribute-map.xml"/>
+		<AttributeResolver type="Query" subjectMatch="true"/>
+		<AttributeFilter type="XML" validate="true" path="attribute-policy.xml"/>
+		<CredentialResolver type="File" key="sp-key.pem" certificate="sp-cert.pem"/>
+	</ApplicationDefaults>
+	<SecurityPolicyProvider type="XML" validate="true" path="security-policy.xml"/>
+	<ProtocolProvider type="XML" validate="true" reloadChanges="false" path="protocols.xml"/>
+</SPConfig>
+EOF 
+
+
+    cat <<EOF >> /etc/shibboleth/itrust.pem
+-----BEGIN CERTIFICATE-----
+MIID6DCCAtACCQCMA0BzGdh1YzANBgkqhkiG9w0BAQUFADCBtTELMAkGA1UEBhMC
+VVMxETAPBgNVBAgMCElsbGlub2lzMQ8wDQYDVQQHDAZVcmJhbmExGzAZBgNVBAoM
+EkktVHJ1c3QgRmVkZXJhdGlvbjEZMBcGA1UECwwQTWV0YWRhdGEgc2lnbmluZzEi
+MCAGA1UEAwwZZmVkb3AuaXRydXN0LmlsbGlub2lzLmVkdTEmMCQGCSqGSIb3DQEJ
+ARYXaXRydXN0LW1nckBpbGxpbm9pcy5lZHUwHhcNMTIxMTE1MTYyOTExWhcNMzIx
+MTEwMTYyOTExWjCBtTELMAkGA1UEBhMCVVMxETAPBgNVBAgMCElsbGlub2lzMQ8w
+DQYDVQQHDAZVcmJhbmExGzAZBgNVBAoMEkktVHJ1c3QgRmVkZXJhdGlvbjEZMBcG
+A1UECwwQTWV0YWRhdGEgc2lnbmluZzEiMCAGA1UEAwwZZmVkb3AuaXRydXN0Lmls
+bGlub2lzLmVkdTEmMCQGCSqGSIb3DQEJARYXaXRydXN0LW1nckBpbGxpbm9pcy5l
+ZHUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDWknoWXZG7rsKBjf4n
+N0xv/BiidspJArpdDW7b+tYm6EzX4/75fluM8h/2ioUe68m9rnEd+gNHiIx6fA2M
+c/DRSZSMc3zcTT+uQhC1TQ1ohnZWdnZj6DTOvqb1Q7W2RvlL7v6loZZmX/xCF8aG
+oDuzAzJ+872vaZCIk2bzpgvRLZIwNz5QRMOUPLRK6KMoDpBQMFAsTThnws/StibK
+OTU/Pl9AM5VIlqNz8tPWJSJYXecTyyih8HbYjr+MXRJNBUQ1/L/0JS2aTfFEVgBC
+s6WwUrZp5TqU06rW5l6wc3RINhWr20ZU3+HOClogrnIq/Jytc3qx9tXyTj7VWsa3
+rLQxAgMBAAEwDQYJKoZIhvcNAQEFBQADggEBAHsDU120uP0ED1MyImbzUuXMfKKG
+9AaBiT4TzQUG5In8rz8u59xuA4hJUB58IZIei85fQrqvpPdNmFBwYgzVjOLIEvsr
+gUU7PwqyOY40iPdba0ZY2MY7wu3UbNlMRa/rHbdLOg8+pt33ESXov3qVZLibQsuS
+qEEOC3Y5p/waMKdBcPwx5ewmkIsTWfTKwQfNOI0f7BQD/mIXRcsjU1G1Ffu/ZrsK
+H6boGYNHeROXt10NRBmxgiqUV4n6tbi80YiAe9hcNTWl+Yh9QWuHPNFJTjhwTH0A
+DIde/RBj/4NC63KU7LNSa/od+jB2STZqBsCHnIrRfpIUr60fv1q11ZM5eDI=
+-----END CERTIFICATE-----
+EOF
+
+sudo mv /etc/shibboleth/attribute-map.xml /etc/shibboleth/attribute-map.xml.orig
+
+
+    cat <<EOF >> /etc/shibboleth/attribute-map.xml
+<!--
+     Created by keith Wessel - shibboleth-mgr@illinois.edu
+     June 16, 2014
+
+     Complete UIUC Shibboleth attribute map
+     Note: avoid uncommenting attributes you don't need as it will slow
+     down your application.
+
+     Attributes will be made available to your application as
+     environment variables (non-Windows SPs) and http header variables
+     by the names defined in the "id" attribute of each attribute
+     definition. You may change the id values to suit your needs.
+
+     To receive an attribute, you must both uncomment it here and
+     request it from the I-Trust Federation Registry. Where names here
+     differ from those in the federation registry, they're noted in the
+     comments.
+-->
+
+<Attributes xmlns="urn:mace:shibboleth:2.0:attribute-map" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <!-- eduPersonPrincipalName -->
+
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.6" id="eppn">
+        <AttributeDecoder xsi:type="ScopedAttributeDecoder"/>
+    </Attribute>
+
+
+    <!-- eduPersonTargetedID -->
+    <!--
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.10" id="persistent-id">
+        <AttributeDecoder xsi:type="NameIDAttributeDecoder" formatter="$NameQualifier!$SPNameQualifier!$Name" defaultQualifiers="true"/>
+    </Attribute>
+    -->
+
+    <!-- eduPersonScopedAffiliation -->
+    <!--
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.9" id="affiliation">
+        <AttributeDecoder xsi:type="ScopedAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+    -->
+
+    <!-- eduPersonAffiliation -->
+    <!--
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.1" id="unscoped-affiliation">
+        <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+    -->
+
+    <!-- eduPersonPrimaryAffiliation -->
+    <!--
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.5" id="primary-affiliation">
+        <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+    -->
+
+    <!-- eduPersonEntitlement -->
+    <!-- <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.7" id="entitlement"/> -->
+
+    <!-- eduPersonNickname -->
+    <!-- <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.2" id="nickname"/> -->
+
+    <!-- eduPersonOrgDN -->
+    <!-- <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.3" id="org-dn"/> -->
+
+    <!-- Attributes defining user's name -->
+    <Attribute name="urn:oid:2.5.4.4" id="sn"/>
+    <!-- <Attribute name="urn:oid:2.5.4.44" id="generationQualifier"/> -->
+    <Attribute name="urn:oid:2.5.4.42" id="givenName"/>
+    <Attribute name="urn:oid:1.3.6.1.4.1.11483.101.2" id="iTrustMiddleName"/>
+    <Attribute name="urn:oid:2.16.840.1.113730.3.1.241" id="displayName"/>
+
+    <!-- Other directory data about the user -->
+    <Attribute name="urn:oid:0.9.2342.19200300.100.1.1" id="uid"/>
+    <Attribute name="urn:oid:0.9.2342.19200300.100.1.3" id="mail"/>
+    <!-- <Attribute name="urn:oid:2.5.4.20" id="telephoneNumber"/> -->
+    <!-- <Attribute name="urn:oid:2.5.4.16" id="postalAddress"/> -->
+    <!-- <Attribute name="urn:oid:2.5.4.12" id="title"/> -->
+    <!-- <Attribute name="urn:oid:1.3.6.1.4.1.11483.101.1" id="iTrustAffiliation"/> -->
+    <!-- <Attribute name="urn:oid:1.3.6.1.4.1.11483.101.3" id="iTrustSuppress"/> -->
+    <Attribute name="urn:oid:1.3.6.1.4.1.11483.101.4" id="iTrustUIN"/>
+
+    <!-- isMemberOf -->
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.5.1.1" id="member"/>
+
+    <!-- organizationName -->
+    <Attribute name="urn:oid:2.5.4.10" id="o"/>
+
+    <!-- organizationalUnit -->
+    <!-- <Attribute name="urn:oid:2.5.4.11" id="ou"/> -->
+
+    <!-- <Attribute name="urn:oid:1.3.6.1.4.1.25178.1.2.10" id="homeOrganizationType"/> -->
+
+</Attributes>
+EOF
+
+sudo chown -R _shibd:_shibd /etc/shibboleth
+sudo chmod 600 /etc/shibboleth/sp-key.pem
+
+
+    cat <<EOF >> /etc/apache2/mods-available/shib.conf
+# https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPApacheConfig
+
+# RPM installations on platforms with a conf.d directory will
+# result in this file being copied into that directory for you
+# and preserved across upgrades.
+
+# For non-RPM installs, you should copy the relevant contents of
+# this file to a configuration location you control.
+
+#
+# Load the Shibboleth module.
+#
+LoadModule mod_shib /usr/lib/apache2/modules/mod_shib2.so
+
+#
+# Turn this on to support "require valid-user" rules from other
+# mod_authn_* modules, and use "require shib-session" for anonymous
+# session-based authorization in mod_shib.
+#
+ShibCompatValidUser Off
+
+#
+# Ensures handler will be accessible.
+#
+<Location /Shibboleth.sso>
+  AuthType None
+  Require all granted
+</Location>
+
+#
+# Used for example style sheet in error templates.
+#
+<IfModule mod_alias.c>
+  <Location /shibboleth-sp>
+    AuthType None
+    Require all granted
+  </Location>
+  Alias /shibboleth-sp/main.css /usr/share/shibboleth/main.css
+</IfModule>
+
+#
+# Configure the module for content.
+#
+# You MUST enable AuthType shibboleth for the module to process
+# any requests, and there MUST be a require command as well. To
+# enable Shibboleth but not specify any session/access requirements
+# use "require shibboleth".
+#
+
+Alias /secure /var/www/html/secure
+
+<Location /secure>
+  AuthType shibboleth
+  ShibRequestSetting requireSession 1
+  require shib-session
+</Location>
+
+<Directory  /var/www/html/moodle/auth/shibboleth/index.php>
+  AuthType shibboleth
+  ShibRequestSetting requireSession 1
+  require valid-user
+  #require shibboleth
+  #require shib-session
+</Directory>
+
+EOF
+
+sudo ln -s /etc/apache2/mods-available/shib.conf /etc/apache2/mods-enabled/shib.conf
+
+
     cat <<EOF >> /etc/apache2/sites-enabled/${siteFQDN}.conf
 <VirtualHost *:81>
-	ServerName ${siteFQDN}
+	ServerName https://${siteFQDN}
 
 	ServerAdmin webmaster@localhost
 	DocumentRoot ${htmlRootDir}
@@ -318,6 +586,10 @@ EOF
 		AllowOverride All
 		Require all granted
 	</Directory>
+  
+        LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined 
+        CustomLog /var/log/apache2/access_log combined
+        ErrorLog /var/log/apache2/error_log
 EOF
     if [ "$httpsTermination" != "None" ]; then
       cat <<EOF >> /etc/apache2/sites-enabled/${siteFQDN}.conf
