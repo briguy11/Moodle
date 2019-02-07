@@ -500,7 +500,7 @@ sudo mv /etc/shibboleth/attribute-map.xml /etc/shibboleth/attribute-map.xml.orig
 EOF
 
 sudo chown -R _shibd:_shibd /etc/shibboleth
-sudo chmod 600 /etc/shibboleth/sp-key.pem
+#sudo chmod 600 /etc/shibboleth/sp-key.pem
 
 
     cat <<EOF >> /etc/apache2/mods-available/shib.conf
