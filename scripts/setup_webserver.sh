@@ -311,7 +311,7 @@ EOF
     # setup shib config
     sudo mv /etc/shibboleth/shibboleth2.xml /etc/shibboleth/shibboleth2.xml.orig
    
-    cat <<EOF >> /etc/shibboleth2.xml
+    cat <<EOF >> /etc/shibboleth/shibboleth2.xml
 <SPConfig xmlns="urn:mace:shibboleth:2.0:native:sp:config"
     xmlns:conf="urn:mace:shibboleth:2.0:native:sp:config"
     xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -372,6 +372,7 @@ EOF
 </SPConfig>
 EOF 
 
+#configure itrust.pem file
 
     cat <<EOF >> /etc/shibboleth/itrust.pem
 -----BEGIN CERTIFICATE-----
