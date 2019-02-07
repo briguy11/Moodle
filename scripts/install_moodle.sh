@@ -57,6 +57,7 @@ set -ex
     echo $mssqlDbSize	>> /tmp/vars.txt
     echo $installObjectFsSwitch >> /tmp/vars.txt
     echo $installGdprPluginsSwitch >> /tmp/vars.txt
+    echo $thumbprintShibSslCert >> /tmp/vars.txt
     echo $thumbprintSslCert >> /tmp/vars.txt
     echo $thumbprintCaCert >> /tmp/vars.txt
     echo $searchType >> /tmp/vars.txt
@@ -437,6 +438,12 @@ EOF
         fi
         chown www-data:www-data /moodle/certs/nginx.*
         chmod 0400 /moodle/certs/nginx.*
+    fi
+
+    if [ "$thumbprintShibSslCert" != "None" ]; then
+           echo "Using VM's cert (/var/lib/waagent/$thumbprintShibSslCert.*) for SSL..."
+           cat /var/lib/waagent/$thumbprintShibSslCert.prv > /moodle/certs/shib.key
+           cat /var/lib/waagent/$thumbprintShibSslCert.crt > /moodle/certs/shib.crt
     fi
 
    # php config 

@@ -9,7 +9,10 @@
                 "sslCertKeyVaultURL":          { "value": "" },
                 "sslCertThumbprint":           { "value": "" },
                 "caCertKeyVaultURL":           { "value": "" },
-                "caCertThumbprint" :           { "value": "" }
+                "caCertThumbprint" :           { "value": "" },
+                "shibKeyVaultResourceId":      { "value": "" },
+                "shibCertKeyVaultURL":         { "value": "" },
+                "shibSslCertThumbprint":       { "value": "" }
            
         }
 }

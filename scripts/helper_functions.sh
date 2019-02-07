@@ -47,6 +47,7 @@ function get_setup_params_from_configs_json
     export mssqlDbSize=$(echo $json | jq -r .dbServerProfile.mssqlDbSize)
     export installObjectFsSwitch=$(echo $json | jq -r .moodleProfile.installObjectFsSwitch)
     export installGdprPluginsSwitch=$(echo $json | jq -r .moodleProfile.installGdprPluginsSwitch)
+    export thumbprintShibSslCert=$(echo $json | jq -r .siteProfile.thumbprintShibSslCert)
     export thumbprintSslCert=$(echo $json | jq -r .siteProfile.thumbprintSslCert)
     export thumbprintCaCert=$(echo $json | jq -r .siteProfile.thumbprintCaCert)
     export searchType=$(echo $json | jq -r .moodleProfile.searchType)

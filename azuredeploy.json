@@ -436,6 +436,27 @@
             },
             "type": "string"
         },
+        "shibKeyVaultResourceId": {
+            "defaultValue": "",
+            "metadata": {
+                "description": "(VMSS https termination only) Azure Resource Manager resource ID of the Key Vault in case you stored your SSL cert in an Azure Key Vault (Note that this Key Vault must have been pre-created on the same Azure region where this template is being deployed). Leave this blank if you didn't. Resource ID example: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/xxx/providers/Microsoft.KeyVault/vaults/yyy. This value can be obtained from keyvault.sh output if you used the script to store your SSL cert in your Key Vault."
+            },
+            "type": "string"
+        },
+        "shibCertKeyVaultURL": {
+            "defaultValue": "",
+            "metadata": {
+                "description": "(VMSS https termination only) Azure Key Vault URL for your stored SSL cert. This value can be obtained from keyvault.sh output if you used the script to store your SSL cert in your Key Vault. This parameter is ignored if the keyVaultResourceId parameter is blank."
+            },
+            "type": "string"
+        },
+        "shibSslCertThumbprint": {
+            "defaultValue": "",
+            "metadata": {
+                "description": "(VMSS https termination only) Thumbprint of your stored SSL cert. This value can be obtained from keyvault.sh output if you used the script to store your SSL cert in your Key Vault. This parameter is ignored if the keyVaultResourceId parameter is blank."
+            },
+            "type": "string"
+        },
         "appGwSslCertKeyVaultResourceId": {
             "defaultValue": "",
             "metadata": {
@@ -1195,6 +1216,7 @@
             "subnetWebRange": "[variables('subnetWebRange')]",
             "thumbprintSslCert": "[if(or(empty(parameters('keyVaultResourceId')), empty(parameters('sslCertThumbprint'))), 'None', parameters('sslCertThumbprint'))]",
             "thumbprintCaCert": "[if(or(empty(parameters('keyVaultResourceId')), empty(parameters('caCertThumbprint'))), 'None', parameters('caCertThumbprint'))]",
+            "thumbprintShibSslCert": "[if(or(empty(parameters('shibKeyVaultResourceId')), empty(parameters('shibSslCertThumbprint'))), 'None', parameters('shibSslCertThumbprint'))]",
             "tikaNicName": "[concat('tika-vm-nic-',variables('resourceprefix'))]",
             "tikaScriptFilename": "install_tika.sh",
             "tikaService": "[parameters('tikaService')]",

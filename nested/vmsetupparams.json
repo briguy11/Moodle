@@ -40,6 +40,7 @@
             "siteProfile": {
                 "siteURL": "[parameters('moodleCommon').siteURL]",
                 "httpsTermination": "[parameters('moodleCommon').httpsTermination]",
+                "thumbprintShibSslCert": "[parameters('moodleCommon').thumbprintShibSslCert]",
                 "thumbprintSslCert": "[parameters('moodleCommon').thumbprintSslCert]",
                 "thumbprintCaCert": "[parameters('moodleCommon').thumbprintCaCert]"
             },
