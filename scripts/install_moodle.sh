@@ -440,12 +440,12 @@ EOF
         chmod 0400 /moodle/certs/nginx.*
     fi
 
-    if [ "$thumbprintShibSslCert" != "None" ]; then
-           echo "Using VM's cert (/var/lib/waagent/$thumbprintShibSslCert.*) for SSL..."
-           cat /var/lib/waagent/$thumbprintShibSslCert.prv > /etc/shibboleth/sp-key.pem
-           cat /var/lib/waagent/$thumbprintShibSslCert.crt > /etc/shibboleth/sp-cert.pem
-	   # sudo chmod 600 /etc/shibboleth/sp-key.pem
-    fi
+   # if [ "$thumbprintShibSslCert" != "None" ]; then
+   #        echo "Using VM's cert (/var/lib/waagent/$thumbprintShibSslCert.*) for SSL..."
+   #        cat /var/lib/waagent/$thumbprintShibSslCert.prv > /etc/shibboleth/sp-key.pem
+   #        cat /var/lib/waagent/$thumbprintShibSslCert.crt > /etc/shibboleth/sp-cert.pem
+#	   # sudo chmod 600 /etc/shibboleth/sp-key.pem
+#    fi
 
    # php config 
    PhpVer=$(get_php_version)
