@@ -1100,6 +1100,7 @@
             "ctlrPipName": "[concat('controller-pubip-',variables('resourceprefix'))]",
             "ctlrVmName": "[concat('controller-vm-',variables('resourceprefix'))]",
             "ctlrVmSecrets": "[take(variables('ctlrVmSecretsArray'), if(empty(parameters('keyVaultResourceId')), 0, 1))]",
+	    "shibVmSecrets": "[variables('shibrCtlrVmSecretsArray')]",
             "dbLogin": "[parameters('dbLogin')]",
             "dbLoginPassword": "[concat(substring(uniqueString(resourceGroup().id, deployment().name), 2, 11), '*7', toUpper('pfiwb'))]",
             "dbServerType": "[parameters('dbServerType')]",
@@ -1247,6 +1248,19 @@
                     "id": "[parameters('keyVaultResourceId')]"
                 },
                 "vaultCertificates": "[take(variables('certUrlArray'), if(empty(parameters('caCertKeyVaultURL')), 1, 2))]"
+            }
+        ],
+        "shibCertUrlArray": [
+            {
+                "certificateUrl": "[parameters('shibCertKeyVaultURL')]"
+            },
+        ],
+        "shibrCtlrVmSecretsArray": [
+            {
+                "sourceVault": {
+                    "id": "[parameters('shibKeyVaultResourceId')]"
+                },
+                "vaultCertificates": "[variables('shibCertUrlArray')]"
             }
         ],
         "octets": "[split(parameters('vNetAddressSpace'), '.')]",
