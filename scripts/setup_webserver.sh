@@ -370,7 +370,7 @@ EOF
 	<SecurityPolicyProvider type="XML" validate="true" path="security-policy.xml"/>
 	<ProtocolProvider type="XML" validate="true" reloadChanges="false" path="protocols.xml"/>
 </SPConfig>
-EOF 
+EOF
 
 #configure itrust.pem file
 
