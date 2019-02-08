@@ -1253,7 +1253,7 @@
         "shibCertUrlArray": [
             {
                 "certificateUrl": "[parameters('shibCertKeyVaultURL')]"
-            },
+            }
         ],
         "shibrCtlrVmSecretsArray": [
             {
