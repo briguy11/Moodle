@@ -124,7 +124,7 @@
                     "secrets": [
                                   "[parameters('moodleCommon').ctlrVmSecrets]",
                                   "[parameters('moodleCommon').shibVmSecrets]"
-			       ]
+			       ],
                     "customData": "[base64(concat('#cloud-config\nwrite_files:\n- encoding: b64\n  content: ', base64(string(parameters('vmSetupParamsObj'))), '\n  owner: root:root\n  path: ', parameters('moodleCommon').moodleOnAzureConfigsJsonPath, '\n  permissions: ', variables('singleQuote'), '0400', variables('singleQuote')))]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
