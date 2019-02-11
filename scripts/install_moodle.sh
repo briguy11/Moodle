@@ -444,7 +444,7 @@ EOF
            echo "Using VM's cert (/var/lib/waagent/$thumbprintShibSslCert.*) for SSL..."
            cat /var/lib/waagent/$thumbprintShibSslCert.prv > /moodle/certs/sp-key.pem
            cat /var/lib/waagent/$thumbprintShibSslCert.crt > /moodle/certs/sp-cert.pem
-           sudo chmod 600 /moodle/certs/sp-key.pem
+           sudo chmod 400 /moodle/certs/sp-key.pem
     fi
 
    # php config 

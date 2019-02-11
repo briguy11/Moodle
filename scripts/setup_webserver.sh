@@ -326,7 +326,7 @@ EOF
 	     space-separated, in REMOTE_USER. The first attribute in
 	     your list that is sent by the IDP will be used.
 	 -->
-	<ApplicationDefaults entityID="https://${siteFQDN}/shibboleth"
+	<ApplicationDefaults entityID="https://urbmoodledev.admin.uillinois.edu/shibboleth"
 	                     REMOTE_USER="uin eppn persistent-id targeted-id">
 		<!--
 		     Lifetime is the max length of a session in seconds.
