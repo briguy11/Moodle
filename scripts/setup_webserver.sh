@@ -312,6 +312,8 @@ EOF
     sudo mv /etc/shibboleth/shibboleth2.xml /etc/shibboleth/shibboleth2.xml.orig
     sudo ln -s /moodle/certs/sp-key.pem /etc/shibboleth/sp-key.pem
     sudo ln -s /moodle/certs/sp-cert.pem /etc/shibboleth/sp-cert.pem
+    sudo chown _shibd:_shibd /etc/shibboleth/sp-key.pem
+    sudo chown _shibd:_shibd /etc/shibboleth/sp-cert.pem
    
     cat <<EOF >> /etc/shibboleth/shibboleth2.xml
 <SPConfig xmlns="urn:mace:shibboleth:2.0:native:sp:config"
